@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-room Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: #333;
+        }
+        #room-container {
+            margin-bottom: 20px;
+        }
+        #room {
+            padding: 8px;
+            font-size: 16px;
+            width: 200px;
+        }
+        #join-room {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        #join-room:hover {
+            background-color: #0056b3;
+        }
+        #chat {
+            width: 100%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #messages {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        #messages li {
+            padding: 10px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        #message-form {
+            display: flex;
+        }
+        #message {
+            flex-grow: 1;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #message + button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        #message + button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Multi-room Chat</h1>
+    <div id="room-container">
+        <label for="room">Room:</label>
+        <input type="text" id="room" placeholder="Enter room name">
+        <button id="join-room">Join Room</button>
+    </div>
+    <div id="chat" style="display:none;">
+        <ul id="messages"></ul>
+        <form id="message-form">
+            <input id="message" autocomplete="off" placeholder="Enter message"><button>Send</button>
+        </form>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        document.getElementById('join-room').addEventListener('click', () => {
+            const room = document.getElementById('room').value;
+            if (room) {
+                socket.emit('joinRoom', room);
+                document.getElementById('chat').style.display = 'block';
+            }
+        });
+        
+        document.getElementById('message-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = document.getElementById('message').value;
+            const room = document.getElementById('room').value;
+            const user = 'User'; // Placeholder for a real username
+            socket.emit('chatMessage', { room, user, message });
+            document.getElementById('message').value = '';
+        });
+        
+        socket.on('chatMessage', (data) => {
+            const item = document.createElement('li');
+            item.textContent = `${data.user}: ${data.message}`;
+            document.getElementById('messages').appendChild(item);
+        });
+    </script>
+</body>
+</html>
